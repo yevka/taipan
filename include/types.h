@@ -1,21 +1,21 @@
 #ifndef TAIPAN_TYPES_H
 #define TAIPAN_TYPES_H
 
-typedef unsigned int u_int;
+#include <stdint.h>
 
-const u_int kWhite = 1;
-const u_int kBlack = 2;
-const u_int kKing = 4;
-const u_int kOff = 240;
+const uint8_t kWhite = 1;
+const uint8_t kBlack = 2;
+const uint8_t kKing = 4;
+const uint8_t kOff = 240;
 
-const u_int kWhiteChecker = kWhite;
-const u_int kWhiteDamka = kWhite | kKing;
+const uint8_t kWhiteChecker = kWhite;
+const uint8_t kWhiteDamka = kWhite | kKing;
 
-const u_int kBlackChecker = kBlack;
-const u_int kBlackDamka = kBlack | kKing;
+const uint8_t kBlackChecker = kBlack;
+const uint8_t kBlackDamka = kBlack | kKing;
 
-const u_int kEmptyCell = 0;
+const uint8_t kEmptyCell = 0;
 
-const u_int kChangeColor = 3;
+const uint8_t kChangeColor = 3;
 
 #endif //TAIPAN_TYPES_H

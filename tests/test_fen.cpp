@@ -46,17 +46,17 @@ mailbox
 
 */
 
-const u_int x = kOff;
-const u_int o = kEmptyCell;
-const u_int w = kWhiteChecker;
-const u_int b = kBlackChecker;
-const u_int W = kWhiteDamka;
-const u_int B = kBlackDamka;
+const uint64_t x = kOff;
+const uint64_t o = kEmptyCell;
+const uint64_t w = kWhiteChecker;
+const uint64_t b = kBlackChecker;
+const uint64_t W = kWhiteDamka;
+const uint64_t B = kBlackDamka;
 
 TEST_CASE("start position", "fen") {
   FEN fen("[FEN \"W:W21,22,23,24,25,26,27,28,29,30,31,32:B1,2,3,4,5,6,7,8,9,10,11,12\"]");
 
-  std::vector<u_int> etalon_mailbox{
+  std::vector<uint64_t> etalon_mailbox{
             x, x, x, x,
 
       x,      b, b, b, b,
@@ -79,7 +79,7 @@ TEST_CASE("start position", "fen") {
 TEST_CASE("FEN W:W29:B25", "fen") {
   FEN fen("[FEN \"W:W29:B25\"]");
 
-  std::vector<u_int> etalon_mailbox{
+  std::vector<uint64_t> etalon_mailbox{
             x, x, x, x,
 
       x,      o, o, o, o,
@@ -102,7 +102,7 @@ TEST_CASE("FEN W:W29:B25", "fen") {
 TEST_CASE("FEN W:W32", "fen") {
   FEN fen("[FEN \"W:W32\"]");
 
-  std::vector<u_int> etalon_mailbox{
+  std::vector<uint64_t> etalon_mailbox{
             x, x, x, x,
 
       x,      o, o, o, o,
@@ -125,7 +125,7 @@ TEST_CASE("FEN W:W32", "fen") {
 TEST_CASE("FEN W:WK29,K32,K28:BK2,3", "fen") {
   FEN fen("[FEN \"W:WK29,K32,K28:BK2,3\"]");
 
-  std::vector<u_int> etalon_mailbox{
+  std::vector<uint64_t> etalon_mailbox{
              x, x, x, x,
 
       x,      o, B, b, o,

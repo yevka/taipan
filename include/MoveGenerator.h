@@ -9,26 +9,26 @@
 #include "types.h"
 
 struct Move {
-  u_int cap_sq[12];
-  u_int cap_type[12];
-  u_int from;
-  u_int to;
+  int64_t cap_sq[12];
+  int64_t cap_type[12];
+  int64_t from;
+  int64_t to;
   bool promotion;
 };
 
 inline bool operator==(const Move &left, const Move &right) {
   if (left.promotion == right.promotion && left.from == right.from && left.to == right.to) {
     if (left.cap_sq[0] == 0 || right.cap_sq[0] == 0) { return false; }
-    std::array<u_int, 12> tmpLeftCapSq;
+    std::array<int64_t, 12> tmpLeftCapSq;
     std::partial_sort_copy(left.cap_sq, left.cap_sq + 12, tmpLeftCapSq.begin(), tmpLeftCapSq.end());
 
-    std::array<u_int, 12> tmpRightCapSq;
+    std::array<int64_t, 12> tmpRightCapSq;
     std::partial_sort_copy(right.cap_sq, right.cap_sq + 12, tmpRightCapSq.begin(), tmpRightCapSq.end());
 
-    std::array<u_int, 12> tmpLeftCapType;
+    std::array<int64_t, 12> tmpLeftCapType;
     std::partial_sort_copy(left.cap_type, left.cap_type + 12, tmpLeftCapType.begin(), tmpLeftCapType.end());
 
-    std::array<u_int, 12> tmpRightCapType;
+    std::array<int64_t, 12> tmpRightCapType;
     std::partial_sort_copy(right.cap_type, right.cap_type + 12, tmpRightCapType.begin(), tmpRightCapType.end());
 
     return std::equal(tmpLeftCapSq.begin(), tmpLeftCapSq.end(), tmpRightCapSq.begin())
@@ -61,12 +61,12 @@ class MoveGenerator {
 
   void unmakeMove(const Move &move);
 
-  void setMailbox(const std::vector<u_int> &mailbox) {
-    for (int i = 0; i < 45; ++i) { mailbox_[i] = mailbox[i]; }
+  void setMailbox(const std::vector<int64_t> &mailbox) {
+    for (int64_t i = 0; i < 45; ++i) { mailbox_[i] = mailbox[i]; }
   }
 
-  std::vector<u_int> getMailbox() const {
-    return std::vector<u_int>(mailbox_, mailbox_ + 45);
+  std::vector<int64_t> getMailbox() const {
+    return std::vector<int64_t>(mailbox_, mailbox_ + 45);
   }
 
   void setIsWhiteMove(const bool isWhiteMove) {
@@ -109,7 +109,7 @@ class MoveGenerator {
         "a1", "c1", "e1", "g1"
     };
 
-    u_int maibox[32] = {
+    int64_t mailbox[32] = {
         5, 6, 7, 8,
         9, 10, 11, 12,
         14, 15, 16, 17,
@@ -122,8 +122,8 @@ class MoveGenerator {
 
     std::vector<std::string> str_moves;
     for (const Move& move : moves) {
-      std::string from = cells[maibox[move.from]];
-      std::string to = cells[maibox[move.to]];
+      std::string from = cells[mailbox[move.from]];
+      std::string to = cells[mailbox[move.to]];
       std::string str_move = from;
       str_move += "-";
       str_move += to;
@@ -135,30 +135,30 @@ class MoveGenerator {
 
  private:
 
-  bool isCapture(const u_int sq) const {
-    u_int stm = isWhiteMove_ ? 1 : 2;
+  bool isCapture(const int64_t sq) const {
+    int64_t stm = isWhiteMove_ ? 1 : 2;
     return bool(mailbox_[sq] & (stm ^ kChangeColor));
   }
 
-  void changeColor(const u_int sq) {
+  void changeColor(const int64_t sq) {
     mailbox_[sq] ^= kChangeColor;
   }
 
-  void addCaptured(const u_int sq, const size_t caps, Move &m) {
+  void addCaptured(int64_t sq, size_t caps, Move &m) {
     m.cap_sq[caps] = sq;
     m.cap_type[caps] = mailbox_[sq];
   }
 
-  void addKingMoves(const u_int sq, const int dir) {
-    for (u_int to = sq + dir; !mailbox_[to]; to += dir) {
+  void addKingMoves(int64_t sq, int64_t dir) {
+    for (int64_t to = sq + dir; !mailbox_[to]; to += dir) {
       moves_.emplace_back(Move {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                                 {kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff},
                                 sq, to, false});
     }
   }
 
-  void addManMove(const u_int sq, const int dir) {
-    u_int to = sq + dir;
+  void addManMove(int64_t sq, int64_t dir) {
+    int64_t to = sq + dir;
     if (!mailbox_[to]) {
       moves_.emplace_back(Move {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                                 {kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff}, sq, to,
@@ -167,29 +167,30 @@ class MoveGenerator {
   }
   void generateSilentMoves();
 
-  Move copyMoveFromTemplate(const size_t caps, Move &t);
+  Move copyMoveFromTemplate(size_t caps, Move &t);
 
-  void kingCapture(const u_int sq, const size_t caps, const int dir, const int bad_dir, Move &t, bool &found);
+  void kingCapture(int64_t sq, size_t caps, int64_t dir, int64_t bad_dir, Move &t, bool &found);
 
-  void tryKingCapture(const u_int sq, const int dir);
+  void tryKingCapture(int64_t sq, int64_t dir);
 
-  void addKingCaptures(const u_int sq, const size_t caps, const int dir, Move &t);
+  void addKingCaptures(int64_t sq, size_t caps, int64_t dir, Move &t);
 
-  void addPromoCaptures(const u_int sq, const size_t caps, const int dir, Move &t);
+  void addPromoCaptures(int64_t sq, size_t caps, int64_t dir, Move &t);
 
-  void manCapture(const u_int sq, const size_t caps, const int dir, const int bad_dir, Move &t, bool &found);
+  void manCapture(int64_t sq, size_t caps, int64_t dir, int64_t bad_dir, Move &t,
+                  bool &found);
 
-  void addManCaptures(const u_int sq, const size_t caps, const int bad_dir, Move &t);
+  void addManCaptures(int64_t sq, size_t caps, int64_t bad_dir, Move &t);
 
-  void tryManCapture(const u_int sq, const int dir);
+  void tryManCapture(int64_t sq, int64_t dir);
 
   void generateCaptures();
 
   void generateAllMoves();
 
  private:
-  u_int mailbox_[45];              // 180 bytes
-  u_int onlyFirstMoveCheckers[13]; // 52 bytes
+  int64_t mailbox_[45];              // 180 bytes
+  int64_t onlyFirstMoveCheckers[13]; // 52 bytes
   std::vector<Move> moves_;        // 24 bytes
   bool isWhiteMove_;               // 1 bytes
 };

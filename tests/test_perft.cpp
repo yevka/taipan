@@ -71,7 +71,7 @@ static void removeDuplicate(std::vector<Move> &moves, MoveGenerator &generator) 
   g.setIsWhiteMove(generator.getIsWhiteMove());
   g.setMailbox(generator.getMailbox());
 
-  std::set<std::vector<u_int>> uniqueMaibox;
+  std::set<std::vector<uint64_t>> uniqueMaibox;
   std::vector<Move> uniqueMoves;
   for (auto &move : moves) {
     g.makeMove(move);

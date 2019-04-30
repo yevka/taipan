@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.1 FATAL_ERROR)
 
 # Setup project
 # We parse the canonical version number located in <include/version.h>.
@@ -45,7 +45,16 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
     target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra -Wunreachable-code -Wpedantic)
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wweak-vtables -Wexit-time-destructors -Wglobal-constructors -Wmissing-noreturn )
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+            -Weverything
+            -fcolor-diagnostics
+
+            -Wno-c++98-compat
+            -Wno-padded
+            )
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W4 /w44265 /w44061 /w44062 )

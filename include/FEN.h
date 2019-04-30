@@ -13,12 +13,12 @@ class FEN {
 
   bool isWhiteMove() const;
 
-  std::vector<u_int> getMailBox() const;
+  std::vector<int64_t> getMailBox() const;
 
  private:
   std::string fenStr_;
 };
 
-std::string mailbox2fenStr(const std::vector<u_int> &mailbox, const bool isWhiteMove);
+std::string mailbox2fenStr(const std::vector<int64_t> &mailbox, bool isWhiteMove);
 
 #endif //TAIPAN_FEN_H

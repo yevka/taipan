@@ -1,6 +1,38 @@
+#include "FEN.h"
+
 #include <sstream>
 
-#include "FEN.h"
+
+namespace {
+    void sideFenToMailbox(const std::string &side, std::vector<int64_t> &mailbox) {
+        if (side.empty()) { return; }
+
+        const int64_t fen_to_mailbox[32]{
+                5, 6, 7, 8,
+                9, 10, 11, 12,
+                14, 15, 16, 17,
+                18, 19, 20, 21,
+                23, 24, 25, 26,
+                27, 28, 29, 30,
+                32, 33, 34, 35,
+                36, 37, 38, 39
+        };
+
+        std::string line;
+        std::stringstream fenStream(side.substr(1));
+        while (fenStream >> line) {
+            const bool isDamka = line.at(0) == 'K';
+            const int64_t fenIndex = isDamka ? std::stoi(line.substr(1)) : std::stoi(line);
+            const int64_t mailBoxIndex = fen_to_mailbox[fenIndex - 1];
+            const bool isWhite = side.at(0) == 'W';
+            if (isDamka) {
+                mailbox[mailBoxIndex] = isWhite ? kWhiteDamka : kBlackDamka;
+            } else {
+                mailbox[mailBoxIndex] = isWhite ? kWhiteChecker : kBlackChecker;
+            }
+        }
+    }
+} // zero namespace
 
 FEN::FEN(const std::string &fenStr) : fenStr_(fenStr) {
 
@@ -11,37 +43,7 @@ bool FEN::isWhiteMove() const {
   return fenStr_.at(6) == 'W';
 }
 
-static void sideFenToMailbox(const std::string &side, std::vector<u_int> &mailbox) {
-  if (side.empty()) { return; }
-  const bool isWhite = side.at(0) == 'W';
-  int fen_to_mailbox[32]{
-      5, 6, 7, 8,
-      9, 10, 11, 12,
-      14, 15, 16, 17,
-      18, 19, 20, 21,
-      23, 24, 25, 26,
-      27, 28, 29, 30,
-      32, 33, 34, 35,
-      36, 37, 38, 39
-  };
-
-  std::string line;
-  std::stringstream fenStream(side.substr(1));
-  while (fenStream >> line) {
-    const bool isDamka = line.at(0) == 'K';
-    const int fenIndex = isDamka ? std::stoi(line.substr(1)) : std::stoi(line);
-    const int mailBoxIndex = fen_to_mailbox[fenIndex - 1];
-
-    if (isDamka) {
-      mailbox[mailBoxIndex] = isWhite ? kWhiteDamka : kBlackDamka;
-    } else {
-      mailbox[mailBoxIndex] = isWhite ? kWhiteChecker : kBlackChecker;
-    }
-  }
-
-}
-
-std::vector<u_int> FEN::getMailBox() const {
+std::vector<int64_t> FEN::getMailBox() const {
   /*
       g8  e8  c8  a8  1-4
     h7  f7  d7  b7    5-8
@@ -85,20 +87,20 @@ mailbox
   std::string tmp(fenStr_.begin() + 8, fenStr_.end() - 2);
   for (auto &symbol : tmp) { if (symbol == ',') { symbol = ' '; }}
 
-  size_t posColon = tmp.find(":");
+  size_t posColon = tmp.find(':');
 
   // [FEN "W:WK18,21,22,23,24,25,26,27,29,30,31,32:B1,2,3,5,K6,7,8,9,10,11,12,28"]
   std::string leftSideColon; // WK18,21,22,23,24,25,26,27,29,30,31,32
   std::string rightSideColon; // B1,2,3,5,K6,7,8,9,10,11,12,28
 
-  if (posColon != tmp.npos) {
+  if (posColon != std::string::npos) {
     leftSideColon = std::string(tmp.begin(), tmp.begin() + posColon);
-    rightSideColon = std::string(tmp.begin() + posColon + 1, tmp.end());
+    rightSideColon = std::string(tmp.begin() + posColon + 1u, tmp.end());
   } else {
     leftSideColon = tmp;
   }
 
-  std::vector<u_int> mailbox(45, kEmptyCell);
+  std::vector<int64_t> mailbox(45, kEmptyCell);
   mailbox[0] = mailbox[1] = mailbox[2] = mailbox[3] = mailbox[4] = kOff;
   mailbox[13] = kOff;
   mailbox[22] = kOff;
@@ -111,12 +113,12 @@ mailbox
   return mailbox;
 }
 
-std::string mailbox2fenStr(const std::vector<u_int> &mailbox, const bool isWhiteMove) {
+std::string mailbox2fenStr(const std::vector<int64_t> &mailbox, bool isWhiteMove) {
   std::string leftSideColon = isWhiteMove ? "[FEN \"W:W" : "[FEN \"B:W";
   std::string rightSideColon = ":B";
 
-  int j = 1;
-  for (int i = 5; i < 40; ++i) {
+  int64_t j = 1;
+  for (int64_t i = 5; i < 40; ++i) {
     if (mailbox[i] == kOff) { continue; }
     if (mailbox[i] == kBlackChecker) { rightSideColon += std::to_string(j) + ","; }
     else if (mailbox[i] == kBlackDamka) { rightSideColon += "K" + std::to_string(j) + ","; }

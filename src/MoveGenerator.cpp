@@ -17,13 +17,13 @@ MoveGenerator::MoveGenerator(const FEN &pos) : MoveGenerator() {
 void MoveGenerator::setPos(const FEN &pos) {
   isWhiteMove_ = pos.isWhiteMove();
   auto posMaibox = pos.getMailBox();
-  for (int i = 0; i < 45; ++i) { mailbox_[i] = posMaibox[i]; }
+  for (int64_t i = 0; i < 45; ++i) { mailbox_[i] = posMaibox[i]; }
 }
 
 void MoveGenerator::makeMove(const Move &move) {
   isWhiteMove_ = !isWhiteMove_;
 
-  u_int checker = move.promotion ? mailbox_[move.from] | kKing : mailbox_[move.from];
+  int64_t checker = move.promotion ? mailbox_[move.from] | kKing : mailbox_[move.from];
   mailbox_[move.from] = kEmptyCell;
   mailbox_[move.to] = checker;
 
@@ -35,7 +35,7 @@ void MoveGenerator::makeMove(const Move &move) {
 void MoveGenerator::unmakeMove(const Move &move) {
   isWhiteMove_ = !isWhiteMove_;
 
-  u_int checker = move.promotion ? isWhiteMove_ ? kWhiteChecker : kBlackChecker : mailbox_[move.to];
+  int64_t checker = move.promotion ? isWhiteMove_ ? kWhiteChecker : kBlackChecker : mailbox_[move.to];
   mailbox_[move.to] = kEmptyCell;
   mailbox_[move.from] = checker;
 
@@ -45,7 +45,7 @@ void MoveGenerator::unmakeMove(const Move &move) {
 }
 
 void MoveGenerator::generateSilentMoves() {
-  u_int sq = 0;
+  int64_t sq = 0;
   for (int j = 0; j < 12 && onlyFirstMoveCheckers[j]; ++j) {
     sq = onlyFirstMoveCheckers[j];
     if (!(mailbox_[sq] & kKing)) {
@@ -65,7 +65,7 @@ void MoveGenerator::generateSilentMoves() {
   }
 }
 
-Move MoveGenerator::copyMoveFromTemplate(const size_t caps, Move &t) {
+Move MoveGenerator::copyMoveFromTemplate(size_t caps, Move &t) {
   Move newMove
       {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff, kOff},
        t.from, 0, t.promotion};
@@ -77,18 +77,18 @@ Move MoveGenerator::copyMoveFromTemplate(const size_t caps, Move &t) {
   return newMove;
 }
 
-void MoveGenerator::kingCapture(const u_int sq,
-                                const size_t caps,
-                                const int dir,
-                                const int bad_dir,
+void MoveGenerator::kingCapture(int64_t sq,
+                                size_t caps,
+                                int64_t dir,
+                                int64_t bad_dir,
                                 Move &t,
                                 bool &found) {
   if (dir == bad_dir) { return; }
-  u_int m = sq + dir;
+  int64_t m = sq + dir;
   while (!mailbox_[m]) { m += dir; }
   if (!isCapture(m)) { return; }
 
-  u_int to = m + dir;
+  int64_t to = m + dir;
   if (mailbox_[to]) { return; }
 
   addCaptured(m, caps, t);
@@ -98,15 +98,15 @@ void MoveGenerator::kingCapture(const u_int sq,
   found = true;
 }
 
-void MoveGenerator::tryKingCapture(const u_int sq, const int dir) {
-  u_int m = sq + dir;
+void MoveGenerator::tryKingCapture(int64_t sq, int64_t dir) {
+  int64_t m = sq + dir;
   while (!mailbox_[m]) { m += dir; }
   if (!isCapture(m)) { return; }
 
-  u_int to = m + dir;
+  int64_t to = m + dir;
   if (mailbox_[to]) { return; }
 
-  u_int saveCell = mailbox_[sq];
+  int64_t saveCell = mailbox_[sq];
   mailbox_[sq] = kEmptyCell;
 
   Move t{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -119,9 +119,9 @@ void MoveGenerator::tryKingCapture(const u_int sq, const int dir) {
   mailbox_[sq] = saveCell;
 }
 
-void MoveGenerator::addKingCaptures(const u_int sq, const size_t caps, const int dir, Move &t) {
+void MoveGenerator::addKingCaptures(int64_t sq, size_t caps, int64_t dir, Move &t) {
   bool found = false;
-  u_int m = sq;
+  int64_t m = sq;
   while (!mailbox_[m]) {
     kingCapture(m, caps, TOP_RIGHT, dir, t, found);
     kingCapture(m, caps, TOP_LEFT, dir, t, found);
@@ -131,7 +131,7 @@ void MoveGenerator::addKingCaptures(const u_int sq, const size_t caps, const int
     m += dir;
   }
 
-  u_int to = m + dir;
+  int64_t to = m + dir;
   if (isCapture(m) && (!mailbox_[to])) {
     addCaptured(m, caps, t);
     changeColor(m);
@@ -141,7 +141,7 @@ void MoveGenerator::addKingCaptures(const u_int sq, const size_t caps, const int
   }
 
   if (!found) {
-    for (u_int isq = sq; mailbox_[isq] == 0; isq += dir) {
+    for (int64_t isq = sq; mailbox_[isq] == 0; isq += dir) {
       auto newMove = copyMoveFromTemplate(caps, t);
       newMove.to = isq;
       moves_.push_back(newMove);
@@ -149,17 +149,17 @@ void MoveGenerator::addKingCaptures(const u_int sq, const size_t caps, const int
   }
 }
 
-void MoveGenerator::addPromoCaptures(const u_int sq, const size_t caps, const int dir, Move &t) {
+void MoveGenerator::addPromoCaptures(int64_t sq, size_t caps, int64_t dir, Move &t) {
   int newDir{};
   if (dir == TOP_RIGHT) { newDir = BOTTOM_RIGHT; }
   else if (dir == TOP_LEFT) { newDir = BOTTOM_LEFT; }
   else if (dir == BOTTOM_LEFT) { newDir = TOP_LEFT; }
   else { newDir = TOP_RIGHT; }
 
-  u_int m = sq + newDir;
+  int64_t m = sq + newDir;
   while (!mailbox_[m]) { m += newDir; }
 
-  u_int to = m + newDir;
+  int64_t to = m + newDir;
   if (isCapture(m) && !mailbox_[to]) {
     addCaptured(m, caps, t);
     changeColor(m);
@@ -173,18 +173,18 @@ void MoveGenerator::addPromoCaptures(const u_int sq, const size_t caps, const in
   moves_.push_back(newMove);
 }
 
-void MoveGenerator::manCapture(const u_int sq,
-                               const size_t caps,
-                               const int dir,
-                               const int bad_dir,
+void MoveGenerator::manCapture(int64_t sq,
+                               size_t caps,
+                               int64_t dir,
+                               int64_t bad_dir,
                                Move &t,
                                bool &found) {
   if (dir == bad_dir) { return; }
 
-  u_int m = sq + dir;
+  int64_t m = sq + dir;
   if (!isCapture(m)) { return; }
 
-  u_int to = m + dir;
+  int64_t to = m + dir;
   if (mailbox_[to]) { return; }
 
   addCaptured(m, caps, t);
@@ -203,7 +203,7 @@ void MoveGenerator::manCapture(const u_int sq,
   found = true;
 }
 
-void MoveGenerator::addManCaptures(const u_int sq, const size_t caps, const int bad_dir, Move &t) {
+void MoveGenerator::addManCaptures(int64_t sq, size_t caps, int64_t bad_dir, Move &t) {
   bool found = false;
   manCapture(sq, caps, TOP_RIGHT, bad_dir, t, found);
   manCapture(sq, caps, TOP_LEFT, bad_dir, t, found);
@@ -217,14 +217,14 @@ void MoveGenerator::addManCaptures(const u_int sq, const size_t caps, const int 
   }
 }
 
-void MoveGenerator::tryManCapture(const u_int sq, const int dir) {
-  u_int m = sq + dir;
+void MoveGenerator::tryManCapture(int64_t sq, int64_t dir) {
+  int64_t m = sq + dir;
   if (!isCapture(m)) { return; }
 
-  u_int to = m + dir;
+  int64_t to = m + dir;
   if (mailbox_[to]) { return; }
 
-  u_int saveCell = mailbox_[sq];
+  int64_t saveCell = mailbox_[sq];
   mailbox_[sq] = kEmptyCell;
 
   Move t{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -247,8 +247,8 @@ void MoveGenerator::tryManCapture(const u_int sq, const int dir) {
 }
 
 void MoveGenerator::generateCaptures() {
-  u_int sq = 0;
-  for (u_int j = 0; j < 12 && onlyFirstMoveCheckers[j]; ++j) {
+  int64_t sq = 0;
+  for (int64_t j = 0; j < 12 && onlyFirstMoveCheckers[j]; ++j) {
     sq = onlyFirstMoveCheckers[j];
     if (!(mailbox_[sq] & kKing)) {
       tryManCapture(sq, TOP_RIGHT);
@@ -267,8 +267,8 @@ void MoveGenerator::generateCaptures() {
 void MoveGenerator::generateAllMoves() {
   auto foundChecker = isWhiteMove_ ? kWhiteChecker : kBlackChecker;
   auto foundDamka = isWhiteMove_ ? kWhiteDamka : kBlackDamka;
-  u_int i = 0;
-  for (u_int sq = 5; sq < 40; ++sq) {
+  int64_t i = 0;
+  for (int64_t sq = 5; sq < 40; ++sq) {
     if (mailbox_[sq] == foundChecker || mailbox_[sq] == foundDamka) { onlyFirstMoveCheckers[i++] = sq; }
   }
   onlyFirstMoveCheckers[i] = 0;
